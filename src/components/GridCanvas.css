@@ -1,0 +1,21 @@
+.grid-canvas {
+  display: grid;
+  width: 480px;
+  height: 480px;
+  background-color: #e6f5e9;
+  border-radius: 16px;
+  padding: 8px;
+  gap: 2px;
+}
+
+.grid-cell {
+  background-color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #d0e6d8;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.grid-cell.active {
+  background-color: #7bcf9a; /* 仮のゾーン色 */
+}
