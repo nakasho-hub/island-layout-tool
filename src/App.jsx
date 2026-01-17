@@ -1,8 +1,14 @@
 // src/App.jsx
 import { useEffect, useState } from "react";
+// 1. ライブラリをインポート
+import ReactGA from "react-ga4";
 import GridCanvas from "./components/GridCanvas";
 import ZoneEditor from "./components/ZoneEditor";
 import { loadLayout, saveLayout, DEFAULT_DATA } from "./utils/storage";
+
+// 2. 測定IDを設定（ご自身のIDに書き換えてください）
+const TRACKING_ID = "G-0VVD44Z6LT"; 
+ReactGA.initialize(TRACKING_ID);
 
 export default function App() {
   const saved = loadLayout();
@@ -16,6 +22,11 @@ export default function App() {
     saved?.gridSize || DEFAULT_DATA.gridSize
   );
 
+  // 3. 初回読み込み時にページビューを送信
+  useEffect(() => {
+    ReactGA.send({ hitType: "pageview", page: window.location.pathname });
+  }, []);
+
   useEffect(() => {
     saveLayout({ zones, cells, selectedZoneId, gridSize });
   }, [zones, cells, selectedZoneId, gridSize]);
@@ -27,6 +38,13 @@ export default function App() {
       { id, name: "新ゾーン", color: "#dee2e6", memo: "" },
     ]);
     setSelectedZoneId(id);
+
+    // 4. イベント計測（ゾーン追加ボタンが押されたとき）
+    ReactGA.event({
+      category: "User Action",
+      action: "add_zone",
+      label: "New Zone Created",
+    });
   };
 
   const updateZone = (id, patch) => {
@@ -58,6 +76,13 @@ export default function App() {
 
     setGridSize(size);
     setCells(nextCells);
+
+    // 5. イベント計測（グリッドサイズ変更）
+    ReactGA.event({
+      category: "User Action",
+      action: "change_grid_size",
+      value: size,
+    });
   };
 
   const resetAll = () => {
@@ -67,6 +92,12 @@ export default function App() {
     setCells(DEFAULT_DATA.cells);
     setSelectedZoneId(DEFAULT_DATA.selectedZoneId);
     setGridSize(DEFAULT_DATA.gridSize);
+
+    // 6. イベント計測（リセット）
+    ReactGA.event({
+      category: "User Action",
+      action: "reset_all",
+    });
   };
 
   return (
@@ -123,7 +154,7 @@ export default function App() {
         size={gridSize}
         zones={zones}
         selectedZoneId={selectedZoneId}
-        cells={cells} // ★修正: initialCells ではなく cells を渡す
+        cells={cells}
         onCellsChange={setCells}
       />
     </div>
