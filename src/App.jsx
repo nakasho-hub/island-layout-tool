@@ -1,18 +1,44 @@
 // src/App.jsx
-import { HashRouter, Routes, Route, Link } from "react-router-dom";
+import { useEffect } from "react";
+// インポートを1つにまとめ、useLocationを追加しました
+import { HashRouter, Routes, Route, Link, useLocation } from "react-router-dom";
+import ReactGA from "react-ga4";
+
 import IslandLayout from "./pages/IslandLayout";
 import DotArtEditor from "./pages/DotArtEditor";
-import RoutineChecker from "./pages/RoutineChecker"; // 追加
+import RoutineChecker from "./pages/RoutineChecker";
 
+// --- GA初期化 ---
+const TRACKING_ID = "G-0VVD44Z6LT";
+ReactGA.initialize(TRACKING_ID);
+
+// ページ遷移を監視して計測するコンポーネント
+function AnalyticsTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // ページビューを送信
+    ReactGA.send({ 
+      hitType: "pageview", 
+      page: location.pathname + location.hash 
+    });
+  }, [location]);
+
+  return null;
+}
+
+// メインコンポーネント
 export default function App() {
   return (
     <HashRouter>
+      {/* ページ遷移トラッキング用のコンポーネントを配置 */}
+      <AnalyticsTracker />
       <div style={{ padding: "16px", maxWidth: "500px", margin: "0 auto", fontFamily: "sans-serif" }}>
         <Routes>
           <Route path="/" element={<HomeMenu />} />
           <Route path="/layout" element={<IslandLayout />} />
           <Route path="/dot-art" element={<DotArtEditor />} />
-          <Route path="/routine" element={<RoutineChecker />} /> {/* 追加 */}
+          <Route path="/routine" element={<RoutineChecker />} />
         </Routes>
       </div>
     </HashRouter>
@@ -26,7 +52,7 @@ function HomeMenu() {
       <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop: "30px" }}>
         <Link to="/layout" style={menuButtonStyle}>島レイアウト整理</Link>
         <Link to="/dot-art" style={menuButtonStyle}>ドット絵・練習パレット</Link>
-        <Link to="/routine" style={menuButtonStyle}>日課（ルーティン）チェッカー</Link> {/* 追加 */}
+        <Link to="/routine" style={menuButtonStyle}>日課（ルーティン）チェッカー</Link>
       </div>
     </div>
   );
