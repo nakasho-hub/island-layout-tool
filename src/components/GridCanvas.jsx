@@ -1,80 +1,84 @@
-// src/components/GridCanvas.jsx
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 export default function GridCanvas({
   size,
   zones,
   selectedZoneId,
-  cells, // 親から現在の状態を直接受け取る
+  cells,
   onCellsChange,
 }) {
-  // マウスが押されているかどうかの状態
   const [isDrawing, setIsDrawing] = useState(false);
+  const containerRef = useRef(null);
 
-  // セルを更新する共通処理
-  // isDragMode: ドラッグ中の呼び出しかどうか
-  const updateCell = (index, isDragMode) => {
+  // 指定した座標（x, y）にあるセルを取得して更新する関数
+  const updateCellAtPosition = (x, y, isDragMode) => {
     if (!selectedZoneId) return;
 
-    // 現在のcellsをコピー
+    // 指/マウスの下にある要素を特定
+    const target = document.elementFromPoint(x, y);
+    if (!target || !target.dataset.index) return;
+
+    const index = parseInt(target.dataset.index);
     const nextCells = { ...cells };
     const currentCellOwner = nextCells[index];
 
     if (isDragMode) {
-      // ドラッグ中（なぞっている時）は、
-      // 既に同じ色で塗られている場合は何もしない（ちらつき防止）
       if (currentCellOwner === selectedZoneId) return;
-      
-      // 違う色なら上書きする
       nextCells[index] = selectedZoneId;
     } else {
-      // クリック（描き始め）の時
-      // 同じ色なら削除（トグル）、違う色なら上書き
       if (currentCellOwner === selectedZoneId) {
         delete nextCells[index];
       } else {
         nextCells[index] = selectedZoneId;
       }
     }
-
     onCellsChange(nextCells);
   };
 
-  const handleMouseDown = (index) => {
+  // --- タッチイベント（スマホ用） ---
+  const handleTouchStart = (e) => {
     setIsDrawing(true);
-    // クリックした瞬間の処理（トグル動作含む）
-    updateCell(index, false);
+    const touch = e.touches[0];
+    updateCellAtPosition(touch.clientX, touch.clientY, false);
   };
 
-  const handleMouseEnter = (index) => {
+  const handleTouchMove = (e) => {
+    if (!isDrawing) return;
+    const touch = e.touches[0];
+    updateCellAtPosition(touch.clientX, touch.clientY, true);
+  };
+
+  // --- マウスイベント（PC用） ---
+  const handleMouseDown = (e, index) => {
+    setIsDrawing(true);
+    updateCellAtPosition(e.clientX, e.clientY, false);
+  };
+
+  const handleMouseMove = (e) => {
     if (isDrawing) {
-      // マウスを押したまま移動してきた時の処理（強制上書き）
-      updateCell(index, true);
+      updateCellAtPosition(e.clientX, e.clientY, true);
     }
   };
 
-  const handleMouseUp = () => {
-    setIsDrawing(false);
-  };
-
-  const handleMouseLeave = () => {
-    // グリッドの外に出たら描画モード終了
-    setIsDrawing(false);
-  };
+  const stopDrawing = () => setIsDrawing(false);
 
   return (
     <div
-      // グリッド全体からマウスが離れた時も描画終了
-      onMouseLeave={handleMouseLeave}
-      onMouseUp={handleMouseUp}
+      ref={containerRef}
+      onMouseUp={stopDrawing}
+      onMouseLeave={stopDrawing}
+      onTouchEnd={stopDrawing}
+      onMouseMove={handleMouseMove}
+      onTouchMove={handleTouchMove}
       style={{
         display: "grid",
         gridTemplateColumns: `repeat(${size}, 1fr)`,
-        gap: "2px", // 隙間を少し狭くしてドット絵っぽく
-        maxWidth: "480px",
+        gap: "2px",
+        maxWidth: "100%", // スマホ幅に合わせる
+        aspectRatio: "1 / 1",
         margin: "0 auto",
-        userSelect: "none", // ドラッグ時に文字選択されないようにする
-        touchAction: "none", // スマホでのスクロール干渉を防ぐ（簡易的な対応）
+        userSelect: "none",
+        touchAction: "none", // スクロールを無効化して描画を優先
       }}
     >
       {Array.from({ length: size * size }).map((_, index) => {
@@ -84,12 +88,8 @@ export default function GridCanvas({
         return (
           <div
             key={index}
-            // マウスイベントを設定
-            onMouseDown={() => handleMouseDown(index)}
-            onMouseEnter={() => handleMouseEnter(index)}
-            // スマホなどのタッチデバイスでも少し描きやすくするための簡易対応
-            // (本格的なタッチ対応はもう少し複雑になりますが、まずはこれでタップ反応します)
-            
+            data-index={index} // 座標からセルを特定するために付与
+            onMouseDown={(e) => handleMouseDown(e, index)}
             style={{
               aspectRatio: "1 / 1",
               border: "1px solid #e0e0e0",

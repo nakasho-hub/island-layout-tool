@@ -1,4 +1,7 @@
-// src/components/ZoneEditor.jsx
+// 1. importは必ずファイルの先頭に書く
+import React from 'react';
+
+// 2. 関数定義は1つだけにする
 export default function ZoneEditor({
   zones,
   selectedZoneId,
@@ -18,8 +21,7 @@ export default function ZoneEditor({
         marginBottom: "16px",
       }}
     >
-      <h3>ゾーン編集</h3>
-
+      <h3 style={{ textAlign: 'center' }}>ゾーン編集</h3>
       {/* ゾーン一覧 */}
       {zones.map((zone) => (
         <div
@@ -68,7 +70,7 @@ export default function ZoneEditor({
       {selectedZone && (
         <>
           <div style={{ marginBottom: "8px" }}>
-            <label>名前：</label>
+            <label style={{ display: 'block', fontWeight: 'bold' }}>名前：</label>
             <input
               value={selectedZone.name}
               onChange={(e) =>
@@ -78,7 +80,7 @@ export default function ZoneEditor({
           </div>
 
           <div style={{ marginBottom: "8px" }}>
-            <label>色：</label>
+            <label style={{ display: 'block', fontWeight: 'bold' }}>色：</label>
             <input
               type="color"
               value={selectedZone.color}
@@ -90,7 +92,7 @@ export default function ZoneEditor({
 
           {/* ★ メモ欄 */}
           <div style={{ marginBottom: "8px" }}>
-            <label>メモ：</label>
+            <label style={{ display: 'block', fontWeight: 'bold' }}>メモ：</label>
             <textarea
               value={selectedZone.memo || ""}
               onChange={(e) =>
