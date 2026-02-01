@@ -1,35 +1,64 @@
 // src/utils/storage.js
 
-const STORAGE_KEY = "island-layout-data";
-const DOT_ART_KEY = "island-dot-art-data"; // ドット絵専用のキー
-const ROUTINE_KEY = "island-routine-data"; // ルーティン専用のキー
+// --- 各機能の保存用キー ---
+const STORAGE_KEY = "island-layout-data";    // 島レイアウト
+const DOT_ART_KEY = "island-dot-art-data";   // ドット絵
+const ROUTINE_KEY = "island-routine-data";   // ルーティン
+const GAME_KEY = "island-minigame-data";     // ミニゲーム
 
+// ==========================================
+// 1. ミニゲーム関連の定義
+// ==========================================
+// --- 作物データ (時間はミリ秒) ---
+// unlockLevel: 解放に必要な農園レベル
+export const CROP_TYPES = {
+  wheat:      { name: "こむぎ",     emoji: "🌾", cost: 10,  val: 15,  time: 10 * 1000, unlockLevel: 1 }, // 10秒
+  carrot:     { name: "ニンジン",   emoji: "🥕", cost: 25,  val: 40,  time: 60 * 1000, unlockLevel: 2 }, // 1分
+  corn:       { name: "トウモロコシ", emoji: "🌽", cost: 80,  val: 150, time: 5 * 60 * 1000, unlockLevel: 3 }, // 5分
+  strawberry: { name: "イチゴ",     emoji: "🍓", cost: 200, val: 450, time: 30 * 60 * 1000, unlockLevel: 5 }, // 30分
+  pumpkin:    { name: "カボチャ",   emoji: "🎃", cost: 500, val: 1200, time: 60 * 60 * 1000, unlockLevel: 8 }, // 1時間
+  melon:      { name: "メロン",     emoji: "🍈", cost: 1000, val: 3000, time: 4 * 60 * 60 * 1000, unlockLevel: 12 }, // 4時間
+};
+
+export const DEFAULT_GAME_DATA = {
+  bells: 100,
+  xp: 0,
+  level: 1,
+  
+  // plots: { type: 'crop'|'empty', cropId: string, plantedAt: timestamp(ms) }
+  // plantedAtを入れることで、ブラウザを閉じても時間を計算できるようにする
+  plots: Array(12).fill({ type: "empty", cropId: null, plantedAt: 0 }),
+  
+  unlockedPlots: 4,
+  selectedSeed: "wheat",
+  harvestCounts: {},
+};
+
+// レベルアップに必要なXP計算 (簡易版)
+export function getNextLevelXp(level) {
+  return level * 100;
+}
+
+export function loadGameData() {
+  try {
+    const data = localStorage.getItem(GAME_KEY);
+    return data ? { ...DEFAULT_GAME_DATA, ...JSON.parse(data) } : DEFAULT_GAME_DATA;
+  } catch { return DEFAULT_GAME_DATA; }
+}
+
+export function saveGameData(data) {
+  try { localStorage.setItem(GAME_KEY, JSON.stringify(data)); } catch (e) {}
+}
+
+// ==========================================
+// 2. 島レイアウト関連
+// ==========================================
 export const DEFAULT_DATA = {
   zones: [
-    {
-      id: "zone-1",
-      name: "住宅",
-      color: "#cfe8ff",
-      memo: "住民同士の距離を近めに配置",
-    },
-    {
-      id: "zone-2",
-      name: "商業",
-      color: "#ffd43b",
-      memo: "案内所からの導線を最優先",
-    },
-    {
-      id: "zone-3",
-      name: "自然",
-      color: "#b2f2bb",
-      memo: "季節イベント用に余白を確保",
-    },
-    {
-      id: "zone-4",
-      name: "川",
-      color: "#74c0fc",
-      memo: "橋・視線の抜け・分断ポイントを意識",
-    },
+    { id: "zone-1", name: "住宅", color: "#cfe8ff", memo: "住民同士の距離を近めに配置" },
+    { id: "zone-2", name: "商業", color: "#ffd43b", memo: "案内所からの導線を最優先" },
+    { id: "zone-3", name: "自然", color: "#b2f2bb", memo: "季節イベント用に余白を確保" },
+    { id: "zone-4", name: "川", color: "#74c0fc", memo: "橋・視線の抜け・分断ポイントを意識" },
   ],
   cells: {},
   selectedZoneId: "zone-1",
@@ -40,39 +69,34 @@ export function loadLayout() {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     return data ? JSON.parse(data) : null;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 export function saveLayout(layout) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
-  } catch (error) {
-    console.error("Failed to save layout:", error);
-  }
+  } catch (error) { console.error(error); }
 }
 
-// ドット絵用の読み込み関数
+// ==========================================
+// 3. ドット絵エディタ関連
+// ==========================================
 export function loadDotArt() {
   try {
     const data = localStorage.getItem(DOT_ART_KEY);
     return data ? JSON.parse(data) : null;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
-// ドット絵用の保存関数
 export function saveDotArt(cells) {
   try {
     localStorage.setItem(DOT_ART_KEY, JSON.stringify(cells));
-  } catch (error) {
-    console.error("Failed to save dot art:", error);
-  }
+  } catch (error) { console.error(error); }
 }
 
-// 曜日定義
+// ==========================================
+// 4. ルーティンチェッカー関連
+// ==========================================
 export const DAYS = [
   { id: "all", label: "毎日" },
   { id: 0, label: "日" },
@@ -86,24 +110,21 @@ export const DAYS = [
 
 export const DEFAULT_ROUTINES = [
   { id: 1, text: "岩を叩く (6個)", completed: false, day: "all" },
-  { id: 2, text: "化石を掘り出す (4個)", completed: false, day: "all" },
-  { id: 3, text: "ウリからカブを買う", completed: false, day: 0 }, // 日曜のみ
-  { id: 4, text: "とたけけライブ", completed: false, day: 6 },     // 土曜のみ
+  { id: 2, text: "化石を掘る (4個)", completed: false, day: "all" },
+  { id: 3, text: "メッセージボトルを拾う", completed: false, day: "all" },
+  { id: 4, text: "今日の株価をチェック", completed: false, day: "all" },
+  { id: 5, text: "タヌポートにアクセス", completed: false, day: "all" },
 ];
 
 export function loadRoutines() {
   try {
     const data = localStorage.getItem(ROUTINE_KEY);
-    return data ? JSON.parse(data) : DEFAULT_ROUTINES;
-  } catch {
-    return DEFAULT_ROUTINES;
-  }
+    return data ? JSON.parse(data) : null;
+  } catch { return null; }
 }
 
 export function saveRoutines(routines) {
   try {
     localStorage.setItem(ROUTINE_KEY, JSON.stringify(routines));
-  } catch (error) {
-    console.error("Failed to save routines:", error);
-  }
+  } catch (error) { console.error(error); }
 }

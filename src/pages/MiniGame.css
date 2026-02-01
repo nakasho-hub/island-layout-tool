@@ -1,0 +1,143 @@
+/* src/pages/MiniGame.css */
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap');
+
+.farm-container {
+  display: flex; justify-content: center; padding: 10px;
+  background-color: #f0f8ff; font-family: 'M PLUS Rounded 1c', sans-serif;
+}
+
+.farm-frame {
+  width: 100%; max-width: 480px;
+  background: #fff; border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  overflow: hidden; display: flex; flex-direction: column;
+  border: 4px solid #8d6e63;
+}
+
+/* ヘッダーエリア */
+.farm-header {
+  background: #fff8e1; padding: 15px;
+  border-bottom: 2px dashed #ffe082;
+}
+
+.header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.header-row.bottom { margin-bottom: 0; }
+
+.level-badge {
+  background: #ff6f00; color: white; padding: 4px 10px; border-radius: 12px;
+  font-size: 0.9rem; box-shadow: 0 2px 0 #c43e00;
+}
+
+.xp-bar-container {
+  flex: 1; height: 16px; background: #e0e0e0; border-radius: 8px; margin-left: 10px;
+  position: relative; overflow: hidden;
+}
+.xp-bar-fill { height: 100%; background: #42a5f5; transition: width 0.3s; }
+.xp-text {
+  position: absolute; top: 0; left: 0; right: 0; text-align: center;
+  font-size: 10px; color: #333; line-height: 16px;
+}
+
+.bell-display { font-size: 1.4rem; color: #ff8f00; font-weight: bold; }
+
+/* 農園グリッド */
+.farm-grid-area {
+  background: #aed581; /* 明るい草地 */
+  /* チェック柄のパターン */
+  background-image: linear-gradient(45deg, #9ccc65 25%, transparent 25%, transparent 75%, #9ccc65 75%, #9ccc65),
+                    linear-gradient(45deg, #9ccc65 25%, transparent 25%, transparent 75%, #9ccc65 75%, #9ccc65);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+  
+  padding: 20px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  min-height: 280px;
+}
+
+.farm-plot {
+  aspect-ratio: 1 / 1;
+  background: #795548; /* 土 */
+  border-radius: 12px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+  position: relative; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.1s;
+}
+.farm-plot:active { transform: scale(0.95); }
+.farm-plot.locked { background: #bdbdbd; cursor: default; box-shadow: none; }
+.farm-plot.empty:hover { background: #8d6e63; }
+
+/* 土の質感 */
+.soil-marker {
+  width: 40%; height: 40%; background: rgba(0,0,0,0.15);
+  border-radius: 50%;
+}
+
+/* 作物表示 */
+.crop-display {
+  display: flex; flex-direction: column; align-items: center; width: 100%;
+}
+.crop-emoji { font-size: 40px; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.2)); }
+.crop-display.growing .crop-emoji { font-size: 24px; opacity: 0.8; }
+
+.mini-progress-bg {
+  width: 60%; height: 6px; background: rgba(255,255,255,0.3);
+  border-radius: 3px; margin-top: 5px;
+}
+.mini-progress-fill { height: 100%; background: #76ff03; border-radius: 3px; }
+
+.ready-sign {
+  position: absolute; bottom: 5px; background: #ff5252; color: white;
+  font-size: 10px; padding: 2px 6px; border-radius: 10px; animation: pop 0.3s;
+}
+.time-tooltip {
+  position: absolute; top: 2px; right: 2px;
+  font-size: 9px; color: rgba(255,255,255,0.8);
+}
+
+@keyframes pop { 0% { transform: scale(0); } 80% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+/* 種選択バー */
+.seed-bar-container {
+  background: #fff; border-top: 4px solid #8d6e63; padding: 10px;
+}
+.seed-scroll-area {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px;
+}
+.seed-card {
+  min-width: 60px; height: 70px; border: 2px solid #ddd; border-radius: 10px;
+  background: #fafafa; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  cursor: pointer; transition: 0.2s; position: relative;
+}
+.seed-card.selected { border-color: #ffb300; background: #fff8e1; transform: translateY(-3px); }
+.seed-card.locked-seed { opacity: 0.6; background: #eee; cursor: default; }
+
+.seed-emoji { font-size: 24px; }
+.seed-info { text-align: center; margin-top: 2px; }
+.seed-cost { font-size: 10px; color: #d32f2f; font-weight: bold; }
+.seed-time { font-size: 9px; color: #757575; }
+.unlock-req { font-size: 9px; color: #555; background: #ccc; padding: 2px 4px; border-radius: 4px; margin-top: 2px; }
+
+/* ボタンとモーダル */
+.pixel-btn {
+  background: #fff; border: 2px solid #8d6e63; color: #5d4037;
+  border-radius: 8px; cursor: pointer; font-weight: bold;
+}
+.pixel-btn.sm { padding: 4px 10px; font-size: 0.9rem; }
+.pixel-btn.wide { width: 100%; padding: 12px; font-size: 1rem; background: #fff3e0; }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-box {
+  background: #fff; width: 85%; max-width: 400px; padding: 20px;
+  border-radius: 20px; border: 4px solid #8d6e63;
+}
+.modal-header { text-align: center; color: #5d4037; margin-top: 0; border-bottom: 2px dashed #ccc; padding-bottom: 10px; }
+.shop-section { margin-bottom: 20px; }
+.shop-section h4 { margin: 0 0 10px; color: #ff6f00; font-size: 0.9rem; }
+
+.record-list { max-height: 200px; overflow-y: auto; }
+.record-row { display: flex; justify-content: space-between; padding: 6px; border-bottom: 1px solid #eee; }
+.close-btn { width: 100%; padding: 10px; background: #8d6e63; color: white; border: none; border-radius: 10px; cursor: pointer; }
