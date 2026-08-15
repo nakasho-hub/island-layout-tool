@@ -24,6 +24,7 @@ function AnalyticsTracker() {
   return null;
 }
 
+
 export default function App() {
   return (
     <HashRouter>
